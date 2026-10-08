@@ -1,1 +1,5 @@
-﻿안녕하세요 장성혁입니다
+﻿이름: 장성혁 (Jang)
+담당 역할: 서기
+관심 분야: 업무 자동화
+사용해 본 기술: n8n, Python(Flask), MySQL, REST API, HTML/CSS/JavaScript, Git/GitHub
+조원들에게 한마디: 회의 내용과 진행 상황 꼼꼼히 정리해서 공유하겠습니다. 끝까지 잘 부탁드립니다!
