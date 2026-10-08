@@ -1,0 +1,5 @@
+* 이름: 유지원
+* 담당 역할: 조장
+* 관심 분야: 임베디드
+* 사용 가능한 기술: Python, C, ARM Assembly, Verilog HDL, PyTorch, FAISS, Django, Flask, AWS, Linux, Docker
+* 조원들에게 전하고 싶은 한마디: 화이팅합시당
