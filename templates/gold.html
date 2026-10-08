@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥇 골드 전용 페이지</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+    {% include 'partials/_nav.html' %}
+
+    <main class="max-w-3xl mx-auto px-4 py-6 flex-1 w-full">
+        <h2 class="text-2xl font-bold mb-1">🥇 골드 전용 페이지</h2>
+        <p class="text-sm text-gray-500 mb-6">이 화면은 항상 보이지만, 아래 데이터는 서버가 골드(gold) 등급 이상만 통과시킵니다.</p>
+
+        <div id="denied-view" class="hidden bg-white rounded-xl shadow-sm p-8 text-center text-gray-500">
+            <p class="text-lg font-medium mb-1" id="denied-title">🚫 접근 권한이 없습니다</p>
+            <p class="text-sm">골드 등급 이상만 볼 수 있어요. (현재 등급: <span id="denied-role">-</span>)</p>
+        </div>
+
+        <div id="gold-view" class="hidden">
+            <div id="gold-posts" class="space-y-3"></div>
+        </div>
+    </main>
+
+    <div id="gold-detail-modal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-30">
+        <div class="bg-white rounded-xl shadow-lg max-w-lg w-full p-6">
+            <div class="flex justify-between items-start mb-3">
+                <h3 id="gold-detail-title" class="text-lg font-bold text-gray-900"></h3>
+                <button onclick="closeGoldDetail()" class="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            <p id="gold-detail-content" class="text-sm text-gray-700 whitespace-pre-line"></p>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+
+        async function init() {
+            if (!token) return showDenied('미로그인');
+
+            const res = await fetch('/api/gold/posts', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.status === 401) return showDenied('미로그인');
+            if (res.status === 403) {
+                const data = await res.json();
+                return showDenied(data.current_role || '-');
+            }
+            const data = await res.json();
+            document.getElementById('gold-view').classList.remove('hidden');
+            const box = document.getElementById('gold-posts');
+            if (!data.posts || data.posts.length === 0) {
+                box.innerHTML = '<div class="text-center py-12 text-gray-400 bg-white rounded-xl shadow-sm">골드 전용 게시글이 아직 없습니다.</div>';
+                return;
+            }
+            box.innerHTML = data.posts.map((p, i) => `
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-amber-100 cursor-pointer hover:shadow-md transition" onclick="openGoldDetail(${i})">
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">${escapeHtml(p.category)}</span>
+                    <h3 class="text-lg font-bold text-gray-900 mt-2 mb-1">${escapeHtml(p.title)}</h3>
+                    <p class="text-sm text-gray-600 whitespace-pre-line line-clamp-2">${escapeHtml(p.content)}</p>
+                </div>
+            `).join('');
+            goldPosts = data.posts;
+        }
+
+        let goldPosts = [];
+
+        function openGoldDetail(i) {
+            const p = goldPosts[i];
+            document.getElementById('gold-detail-title').innerText = p.title;
+            document.getElementById('gold-detail-content').innerText = p.content;
+            document.getElementById('gold-detail-modal').classList.remove('hidden');
+        }
+
+        function closeGoldDetail() {
+            document.getElementById('gold-detail-modal').classList.add('hidden');
+        }
+
+        function showDenied(role) {
+            document.getElementById('denied-role').innerText = role;
+            document.getElementById('denied-view').classList.remove('hidden');
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
+
+        init();
+    </script>
+</body>
+</html>
